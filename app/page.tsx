@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ProfileCard } from "@/components/profile-card";
 import { useProfile } from "@/hooks/use-profile";
-import { Wallet, Github, Package, ExternalLink, Copy, Check } from "lucide-react";
+import { Wallet, Github, Package, ExternalLink, Copy, Check, Loader2, Search } from "lucide-react";
 
 export default function Home() {
   const { address: connectedAddress } = useAccount();
@@ -17,7 +17,7 @@ export default function Home() {
   const [selectedAddress, setSelectedAddress] = useState<string | undefined>();
   const [copied, setCopied] = useState(false);
 
-  const { data: profile, isLoading, error } = useProfile(selectedAddress);
+  const { data: profile, isLoading, error, refetch } = useProfile(selectedAddress);
 
   const handleSearch = () => {
     if (inputAddress && isAddress(inputAddress)) {
@@ -43,9 +43,9 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col lg:flex-row gap-8 justify-between">
+        <div className="flex flex-col lg:flex-row gap-4 lg:gap-8 justify-between">
           {/* Main Content */}
-          <div className="flex flex-col items-center gap-8 w-full max-w-md">
+          <div className="flex flex-col items-center gap-4 lg:gap-8 w-full max-w-md">
             {/* Header */}
             <div className="text-center">
               <h1 className="text-3xl font-bold tracking-tight">BaseCred Demo</h1>
@@ -75,8 +75,13 @@ export default function Home() {
                     onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                     className="font-mono text-sm"
                   />
-                  <Button onClick={handleSearch} disabled={!isValidInput}>
-                    Search
+                  <Button onClick={handleSearch} disabled={!isValidInput || isLoading}>
+                    {isLoading ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <Search className="size-4" />
+                    )}
+                    {isLoading ? "Searching..." : "Search"}
                   </Button>
                 </div>
                 {inputAddress && !isValidInput && (
@@ -103,6 +108,7 @@ export default function Home() {
               profile={profile}
               isLoading={isLoading}
               error={error}
+              onRetry={() => refetch()}
             />
 
             {/* Example Addresses */}

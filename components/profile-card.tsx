@@ -11,12 +11,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ScoreDisplay } from "./score-display";
 import { ProfileStats } from "./profile-stats";
 import { UnifiedProfile, AvailabilityState } from "@/hooks/use-profile";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, CheckCircle, XCircle, AlertTriangle, Unlink, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface ProfileCardProps {
   profile: UnifiedProfile | undefined;
   isLoading: boolean;
   error: Error | null;
+  onRetry?: () => void;
 }
 
 function truncateAddress(address: string): string {
@@ -30,30 +32,27 @@ function AvailabilityBadge({
   source: string;
   status: AvailabilityState;
 }) {
-  const colors: Record<AvailabilityState, string> = {
-    available: "bg-green-500/20 text-green-400",
-    not_found: "bg-yellow-500/20 text-yellow-400",
-    unlinked: "bg-orange-500/20 text-orange-400",
-    error: "bg-red-500/20 text-red-400",
+  const config: Record<AvailabilityState, { color: string; label: string; Icon: typeof CheckCircle }> = {
+    available: { color: "bg-green-600/20 text-green-700", label: "Available", Icon: CheckCircle },
+    not_found: { color: "bg-yellow-600/20 text-yellow-700", label: "Not found", Icon: AlertTriangle },
+    unlinked: { color: "bg-orange-600/20 text-orange-700", label: "Unlinked", Icon: Unlink },
+    error: { color: "bg-red-600/20 text-red-700", label: "Error", Icon: XCircle },
   };
 
-  const labels: Record<AvailabilityState, string> = {
-    available: "Available",
-    not_found: "Not found",
-    unlinked: "Unlinked",
-    error: "Error",
-  };
+  const { color, label, Icon } = config[status];
 
   return (
     <span
-      className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${colors[status]}`}
+      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${color}`}
+      title={`${source}: ${label}`}
     >
-      {source}: {labels[status]}
+      <Icon className="size-3" aria-hidden="true" />
+      {source}: {label}
     </span>
   );
 }
 
-export function ProfileCard({ profile, isLoading, error }: ProfileCardProps) {
+export function ProfileCard({ profile, isLoading, error, onRetry }: ProfileCardProps) {
   if (isLoading) {
     return (
       <Card className="w-full max-w-md">
@@ -82,6 +81,12 @@ export function ProfileCard({ profile, isLoading, error }: ProfileCardProps) {
           <p className="text-sm text-muted-foreground text-center">
             {error.message}
           </p>
+          {onRetry && (
+            <Button variant="outline" size="sm" onClick={onRetry}>
+              <RefreshCw className="size-4" />
+              Try again
+            </Button>
+          )}
         </CardContent>
       </Card>
     );
